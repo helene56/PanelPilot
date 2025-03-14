@@ -11,7 +11,7 @@
 #define PIN_CS   17
 #define PIN_SCK  18
 #define PIN_MOSI 19
-#define PIN_D_C  15
+#define PIN_D_C  15 // data selection, command: 0, display data: 1
 // Data will be copied from src to dst
 const char src[] = "Hello, world! (from DMA)";
 char dst[count_of(src)];
