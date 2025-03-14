@@ -36,6 +36,8 @@ void write_to_display(const char command[], int d_c_state, int chan, dma_channel
     );
     // to stop transmission drive high
     gpio_put(PIN_CS, 1);
+    // for now lets just wait 3 us
+    sleep_us(3);
 }
 
 void read_from_display(const char command[], char result[count_of(command)],int d_c_state, int chan, dma_channel_config c)
@@ -55,6 +57,9 @@ void read_from_display(const char command[], char result[count_of(command)],int 
     );
     // to stop transmission drive high
     gpio_put(PIN_CS, 1);
+    // display result
+    puts(result);
+    sleep_us(3);
 }
 
 int main()
