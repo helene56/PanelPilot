@@ -19,7 +19,7 @@ char dst[count_of(src)];
 
 char placeholder[1];
 
-void write_to_display(const char command[], int d_c_state, int chan, dma_channel_config c)
+void write_to_display(const char command[], int command_size, int d_c_state, int chan, dma_channel_config c, bool chip_active)
 {
     // to activate, drive cs low
     gpio_put(PIN_CS, 0);
@@ -31,16 +31,21 @@ void write_to_display(const char command[], int d_c_state, int chan, dma_channel
         &c,                // The configuration we just created
         placeholder,       // store result from display readback
         command,           // command send to display
-        count_of(command), // Number of transfers; in this case each is 1 byte.
+        command_size,      // Number of transfers; in this case each is 1 byte.
         true               // Start immediately.
     );
-    // to stop transmission drive high
-    gpio_put(PIN_CS, 1);
-    // for now lets just wait 3 us
-    sleep_us(3);
+    // chip active: low, chip inactive: high
+    if (!chip_active)
+    {
+        // to stop transmission drive high
+        gpio_put(PIN_CS, 1);
+        // for now lets just wait 3 us
+        sleep_us(3);
+    }
+    
 }
 
-void read_from_display(const char command[], char result[count_of(command)],int d_c_state, int chan, dma_channel_config c)
+void read_from_display(char result[count_of(placeholder)],int d_c_state, int chan, dma_channel_config c)
 {
     // to activate, drive cs low
     gpio_put(PIN_CS, 0);
@@ -51,14 +56,13 @@ void read_from_display(const char command[], char result[count_of(command)],int 
         chan,              // Channel to be configured
         &c,                // The configuration we just created
         result,            // store result from display readback
-        command,           // command send to display
-        count_of(command), // Number of transfers; in this case each is 1 byte.
+        placeholder,           // command send to display
+        count_of(placeholder), // Number of transfers; in this case each is 1 byte.
         true               // Start immediately.
     );
     // to stop transmission drive high
     gpio_put(PIN_CS, 1);
-    // display result
-    puts(result);
+
     sleep_us(3);
 }
 
@@ -92,26 +96,45 @@ int main()
     channel_config_set_read_increment(&c, true);
     channel_config_set_write_increment(&c, true);
     
-    dma_channel_configure(
-        chan,          // Channel to be configured
-        &c,            // The configuration we just created
-        dst,           // The initial write address
-        src,           // The initial read address
-        count_of(src), // Number of transfers; in this case each is 1 byte.
-        true           // Start immediately.
-    );
     
-    // We could choose to go and do something else whilst the DMA is doing its
-    // thing. In this case the processor has nothing else to do, so we just
-    // wait for the DMA to finish.
-    dma_channel_wait_for_finish_blocking(chan);
-
-    // allow usb time to connect
+    // write
+    const char command[] {0b00000100};
+    int d_c_state {0}; // writing a command
+    bool chip_active {true}; // keep active for next read operation
+    write_to_display(command, count_of(command), d_c_state, chan, c, chip_active);
+    // read
+    char result[30] {0};
+    read_from_display(result, 1, chan, c);
+    // display result
     sleep_ms(9000);
+    char display_info[50]; // Ensure sufficient size
+    sprintf(display_info, "Dummy Parameter: %02X, Manufacturer ID: %02X, Version ID: %02X, Driver ID: %02X", result[0], result[1], result[2], result[3]);
+    puts(display_info);
+    for (int i = 0; i < count_of(command); i++) 
+    {
+        printf("%02X ", result[i]);
+    }
+    puts(""); // Add a newline after printing.
+    // dma_channel_configure(
+    //     chan,          // Channel to be configured
+    //     &c,            // The configuration we just created
+    //     dst,           // The initial write address
+    //     src,           // The initial read address
+    //     count_of(src), // Number of transfers; in this case each is 1 byte.
+    //     true           // Start immediately.
+    // );
+    
+    // // We could choose to go and do something else whilst the DMA is doing its
+    // // thing. In this case the processor has nothing else to do, so we just
+    // // wait for the DMA to finish.
+    // dma_channel_wait_for_finish_blocking(chan);
 
-    // The DMA has now copied our text from the transmit buffer (src) to the
-    // receive buffer (dst), so we can print it out from there.
-    puts(dst);
+    // // allow usb time to connect
+    // sleep_ms(9000);
+
+    // // The DMA has now copied our text from the transmit buffer (src) to the
+    // // receive buffer (dst), so we can print it out from there.
+    // puts(dst);
     // 1. write a function to write to the slave (display)
     // 2. write a function to read from the slave to the master (rp2040)
     // 3. use one of the read functions to get a display id back send to usb serial monitor
