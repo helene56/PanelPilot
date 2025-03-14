@@ -16,21 +16,26 @@
 const char src[] = "Hello, world! (from DMA)";
 char dst[count_of(src)];
 
-void write_to_display(uint8_t buffer[], int d_c, int chan, dma_channel_config c, const char src[])
+
+char placeholder[1];
+
+void write_to_display(uint8_t buffer[], int d_c_state, int chan, dma_channel_config c, const char src[])
 {
-    // to initialize, drive cs low
+    // to activate, drive cs low
     gpio_put(PIN_CS, 0);
     // set D/C
-    gpio_put(PIN_D_C, d_c);
+    gpio_put(PIN_D_C, d_c_state);
     // send the command
     dma_channel_configure(
         chan,          // Channel to be configured
         &c,            // The configuration we just created
-        dst,           // store result from display readback
+        placeholder,   // store result from display readback
         src,           // command send to display
         count_of(src), // Number of transfers; in this case each is 1 byte.
         true           // Start immediately.
     );
+    // to stop transmission drive high
+    gpio_put(PIN_CS, 1);
 }
 
 int main()
