@@ -21,7 +21,7 @@ void write_to_display(uint8_t buffer[], int d_c, int chan, dma_channel_config c,
     // to initialize, drive cs low
     gpio_put(PIN_CS, 0);
     // set D/C
-    gpio_put(PIN_CS, d_c);
+    gpio_put(PIN_D_C, d_c);
     // send the command
     dma_channel_configure(
         chan,          // Channel to be configured
