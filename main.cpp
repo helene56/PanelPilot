@@ -60,6 +60,8 @@ int main()
     // wait for the DMA to finish.
     dma_channel_wait_for_finish_blocking(chan);
     
+    // allow usb time to connect
+    sleep_ms(9000);
     // The DMA has now copied our text from the transmit buffer (src) to the
     // receive buffer (dst), so we can print it out from there.
     puts(dst);
