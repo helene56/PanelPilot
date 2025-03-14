@@ -16,7 +16,22 @@
 const char src[] = "Hello, world! (from DMA)";
 char dst[count_of(src)];
 
-
+void write_to_display(uint8_t buffer[], int d_c, int chan, dma_channel_config c, const char src[])
+{
+    // to initialize, drive cs low
+    gpio_put(PIN_CS, 0);
+    // set D/C
+    gpio_put(PIN_CS, d_c);
+    // send the command
+    dma_channel_configure(
+        chan,          // Channel to be configured
+        &c,            // The configuration we just created
+        dst,           // store result from display readback
+        src,           // command send to display
+        count_of(src), // Number of transfers; in this case each is 1 byte.
+        true           // Start immediately.
+    );
+}
 
 int main()
 {
@@ -33,7 +48,9 @@ int main()
     gpio_set_dir(PIN_CS, GPIO_OUT);
     gpio_put(PIN_CS, 1);
     // For more examples of SPI use see https://github.com/raspberrypi/pico-examples/tree/master/spi
-
+    
+    // initialize D/C
+    gpio_set_dir(PIN_D_C, GPIO_OUT);
     // Get a free channel, panic() if there are none
     int chan = dma_claim_unused_channel(true);
     
