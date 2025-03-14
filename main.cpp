@@ -19,7 +19,7 @@ char dst[count_of(src)];
 
 char placeholder[1];
 
-void write_to_display(const char command[], int d_c_state, int chan, dma_channel_config c, const char src[])
+void write_to_display(const char command[], int d_c_state, int chan, dma_channel_config c)
 {
     // to activate, drive cs low
     gpio_put(PIN_CS, 0);
@@ -27,18 +27,35 @@ void write_to_display(const char command[], int d_c_state, int chan, dma_channel
     gpio_put(PIN_D_C, d_c_state);
     // send the command
     dma_channel_configure(
-        chan,          // Channel to be configured
-        &c,            // The configuration we just created
-        placeholder,   // store result from display readback
+        chan,              // Channel to be configured
+        &c,                // The configuration we just created
+        placeholder,       // store result from display readback
         command,           // command send to display
         count_of(command), // Number of transfers; in this case each is 1 byte.
-        true           // Start immediately.
+        true               // Start immediately.
     );
     // to stop transmission drive high
     gpio_put(PIN_CS, 1);
 }
 
-void read_from_display()
+void read_from_display(const char command[], char result[count_of(command)],int d_c_state, int chan, dma_channel_config c)
+{
+    // to activate, drive cs low
+    gpio_put(PIN_CS, 0);
+    // set D/C
+    gpio_put(PIN_D_C, d_c_state);
+    // send the command
+    dma_channel_configure(
+        chan,              // Channel to be configured
+        &c,                // The configuration we just created
+        result,            // store result from display readback
+        command,           // command send to display
+        count_of(command), // Number of transfers; in this case each is 1 byte.
+        true               // Start immediately.
+    );
+    // to stop transmission drive high
+    gpio_put(PIN_CS, 1);
+}
 
 int main()
 {
