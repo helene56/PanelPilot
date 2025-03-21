@@ -2,7 +2,6 @@
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
 #include "hardware/dma.h"
-
 // SPI Defines
 // We are going to use SPI 0, and allocate it to the following GPIO pins
 // Pins can be changed, see the GPIO function select table in the datasheet for information on GPIO assignments
@@ -11,135 +10,233 @@
 #define PIN_CS   17
 #define PIN_SCK  18
 #define PIN_MOSI 19
-#define PIN_D_C  15 // data selection, command: 0, display data: 1
-// Data will be copied from src to dst
-const char src[] = "Hello, world! (from DMA)";
-char dst[count_of(src)];
+#define PIN_D_C  22 // data selection, command: 0, display data: 1
+#define PIN_RST  21
 
 
-char placeholder[1];
-
-void write_to_display(const char command[], int command_size, int d_c_state, int chan, dma_channel_config c, bool chip_active)
-{
-    // to activate, drive cs low
+void write_command(uint8_t cmd) {
+    gpio_put(PIN_D_C, 0);  // Command mode
     gpio_put(PIN_CS, 0);
-    // set D/C
-    gpio_put(PIN_D_C, d_c_state);
-    // send the command
-    dma_channel_configure(
-        chan,              // Channel to be configured
-        &c,                // The configuration we just created
-        placeholder,       // store result from display readback
-        command,           // command send to display
-        command_size,      // Number of transfers; in this case each is 1 byte.
-        true               // Start immediately.
-    );
-    // chip active: low, chip inactive: high
-    if (!chip_active)
-    {
-        // to stop transmission drive high
-        gpio_put(PIN_CS, 1);
-        // for now lets just wait 3 us
-        sleep_us(3);
-    }
-    
+    spi_write_blocking(SPI_PORT, &cmd, 1);
+    gpio_put(PIN_CS, 1);
+    sleep_ms(1);
 }
 
-void read_from_display(char result[count_of(placeholder)],int d_c_state, int chan, dma_channel_config c)
-{
-    // to activate, drive cs low
+void write_data(uint8_t data) {
+    gpio_put(PIN_D_C, 1);  // Data mode
     gpio_put(PIN_CS, 0);
-    // set D/C
-    gpio_put(PIN_D_C, d_c_state);
-    // send the command
-    dma_channel_configure(
-        chan,              // Channel to be configured
-        &c,                // The configuration we just created
-        result,            // store result from display readback
-        placeholder,           // command send to display
-        count_of(placeholder), // Number of transfers; in this case each is 1 byte.
-        true               // Start immediately.
-    );
-    // to stop transmission drive high
+    spi_write_blocking(SPI_PORT, &data, 1);
     gpio_put(PIN_CS, 1);
+    sleep_ms(1);
+}
 
-    sleep_us(3);
+void write_data_buffer(uint8_t *data, size_t length) {
+    gpio_put(PIN_D_C, 1);  // Data mode
+    gpio_put(PIN_CS, 0);
+    spi_write_blocking(SPI_PORT, data, length);
+    gpio_put(PIN_CS, 1);
+}
+
+
+void lcd_reset() {
+    gpio_put(PIN_RST, 0);
+    sleep_ms(10);
+    gpio_put(PIN_RST, 1);
+    sleep_ms(120);
+}
+
+void fill_screen(uint16_t color) 
+{
+    uint8_t data[320 * 2];  // Buffer for 320 pixels (each pixel = 2 bytes in 16-bit RGB565 format)
+    
+    for (int i = 0; i < 320; i++) 
+    {
+        data[2 * i] = (color >> 8) & 0xFF;  // High byte
+        data[2 * i + 1] = color & 0xFF;     // Low byte
+    }
+
+    write_command(0x2A);  // Column Address Set
+    write_data(0x00); write_data(0x00);  // Start column (0)
+    write_data(0x00); write_data(0xEF);  // End column (239)
+
+    write_command(0x2B);  // Row Address Set
+    write_data(0x00); write_data(0x00);  // Start row (0)
+    write_data(0x01); write_data(0x3F);  // End row (319)
+
+    write_command(0x2C);  // Memory Write
+
+    // Send pixel data in chunks
+    for (int y = 0; y < 240; y++) {
+        write_data_buffer(data, sizeof(data));  // Write 320 pixels at once
+    }
+}
+
+
+void lcd_init() {
+    // Configure SPI and GPIOs
+    spi_init(SPI_PORT, 20 * 1000 * 1000);
+    gpio_set_function(PIN_MOSI, GPIO_FUNC_SPI);
+    gpio_set_function(PIN_SCK, GPIO_FUNC_SPI);
+    gpio_set_function(PIN_CS, GPIO_FUNC_SIO);  // CS pin is typically controlled manually
+    // gpio_init(PIN_CS);
+    gpio_init(PIN_D_C);
+    gpio_init(PIN_RST);
+    gpio_set_dir(PIN_CS, GPIO_OUT);
+    gpio_set_dir(PIN_D_C, GPIO_OUT);
+    gpio_set_dir(PIN_RST, GPIO_OUT);
+    gpio_put(PIN_CS, 1);
+    
+    lcd_reset();
+
+    // Initialize ILI9341
+    write_command(0xEF);
+    write_data(0x03);
+    write_data(0x80);
+    write_data(0x02);
+
+    write_command(0xCF);
+    write_data(0x00);
+    write_data(0xC1);
+    write_data(0x30);
+
+    write_command(0xED);
+    write_data(0x64);
+    write_data(0x03);
+    write_data(0x12);
+    write_data(0x81);
+
+    write_command(0xE8);
+    write_data(0x85);
+    write_data(0x00);
+    write_data(0x78);
+
+    write_command(0xCB);
+    write_data(0x39);
+    write_data(0x2C);
+    write_data(0x00);
+    write_data(0x34);
+    write_data(0x02);
+
+    write_command(0xF7);
+    write_data(0x20);
+
+    write_command(0xEA);
+    write_data(0x00);
+    write_data(0x00);
+
+    write_command(0xC0);    // Power control
+    write_data(0x23);
+
+    write_command(0xC1);    // Power control
+    write_data(0x10);
+
+    write_command(0xC5);    // VCM control
+    write_data(0x3e);
+    write_data(0x28);
+
+    write_command(0xC7);    // VCM control2
+    write_data(0x86);
+
+    write_command(0x36);    // Memory Access Control
+    write_data(0x40 | 0x08);  // Rotation 0 (portrait mode)
+
+    // write_data(0x48);
+
+    write_command(0x3A);
+    write_data(0x55);
+
+    write_command(0xB1);
+    write_data(0x00);
+    write_data(0x13); // 0x18 79Hz, 0x1B default 70Hz, 0x13 100Hz
+
+    write_command(0xB6);    // Display Function Control
+    write_data(0x08);
+    write_data(0x82);
+    write_data(0x27);
+
+    write_command(0xF2);    // 3Gamma Function Disable
+    write_data(0x00);
+
+    write_command(0x26);    // Gamma curve selected
+    write_data(0x01);
+
+    write_command(0xE0);    // Set Gamma
+    write_data(0x0F);
+    write_data(0x31);
+    write_data(0x2B);
+    write_data(0x0C);
+    write_data(0x0E);
+    write_data(0x08);
+    write_data(0x4E);
+    write_data(0xF1);
+    write_data(0x37);
+    write_data(0x07);
+    write_data(0x10);
+    write_data(0x03);
+    write_data(0x0E);
+    write_data(0x09);
+    write_data(0x00);
+
+    write_command(0xE1);    // Set Gamma
+    write_data(0x00);
+    write_data(0x0E);
+    write_data(0x14);
+    write_data(0x03);
+    write_data(0x11);
+    write_data(0x07);
+    write_data(0x31);
+    write_data(0xC1);
+    write_data(0x48);
+    write_data(0x08);
+    write_data(0x0F);
+    write_data(0x0C);
+    write_data(0x31);
+    write_data(0x36);
+    write_data(0x0F);
+
+    write_command(0x11);    // Exit Sleep
+    gpio_put(PIN_CS, 1);    // end write, set cs high
+    sleep_ms(120);
+    gpio_put(PIN_CS, 0);    // begin write, set cs low
+    
+    write_command(0x29);    // Display on
 }
 
 int main()
 {
     stdio_init_all();
 
-    // SPI initialisation. This example will use SPI at 1MHz.
-    spi_init(SPI_PORT, 1000*1000);
-    gpio_set_function(PIN_MISO, GPIO_FUNC_SPI);
-    gpio_set_function(PIN_CS,   GPIO_FUNC_SIO);
-    gpio_set_function(PIN_SCK,  GPIO_FUNC_SPI);
-    gpio_set_function(PIN_MOSI, GPIO_FUNC_SPI);
-    
-    // Chip select is active-low, so we'll initialise it to a driven-high state
-    gpio_set_dir(PIN_CS, GPIO_OUT);
-    gpio_put(PIN_CS, 1);
-    // For more examples of SPI use see https://github.com/raspberrypi/pico-examples/tree/master/spi
-    
-    // initialize D/C
-    gpio_set_dir(PIN_D_C, GPIO_OUT);
-    // Get a free channel, panic() if there are none
-    int chan = dma_claim_unused_channel(true);
-    
-    // 8 bit transfers. Both read and write address increment after each
-    // transfer (each pointing to a location in src or dst respectively).
-    // No DREQ is selected, so the DMA transfers as fast as it can.
-    
-    dma_channel_config c = dma_channel_get_default_config(chan);
-    channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
-    channel_config_set_read_increment(&c, true);
-    channel_config_set_write_increment(&c, true);
-    
-    
-    // write
-    const char command[] {0b00000100};
-    int d_c_state {0}; // writing a command
-    bool chip_active {true}; // keep active for next read operation
-    write_to_display(command, count_of(command), d_c_state, chan, c, chip_active);
-    // read
-    char result[30] {0};
-    read_from_display(result, 1, chan, c);
-    // display result
-    sleep_ms(9000);
-    char display_info[50]; // Ensure sufficient size
-    sprintf(display_info, "Dummy Parameter: %02X, Manufacturer ID: %02X, Version ID: %02X, Driver ID: %02X", result[0], result[1], result[2], result[3]);
-    puts(display_info);
-    for (int i = 0; i < count_of(command); i++) 
-    {
-        printf("%02X ", result[i]);
-    }
-    puts(""); // Add a newline after printing.
-    // dma_channel_configure(
-    //     chan,          // Channel to be configured
-    //     &c,            // The configuration we just created
-    //     dst,           // The initial write address
-    //     src,           // The initial read address
-    //     count_of(src), // Number of transfers; in this case each is 1 byte.
-    //     true           // Start immediately.
-    // );
-    
-    // // We could choose to go and do something else whilst the DMA is doing its
-    // // thing. In this case the processor has nothing else to do, so we just
-    // // wait for the DMA to finish.
-    // dma_channel_wait_for_finish_blocking(chan);
+    // // SPI initialisation
+    // spi_init(SPI_PORT, 1000 * 1000);  // Initialize SPI at 1 MHz
+    // gpio_set_function(PIN_MISO, GPIO_FUNC_SPI);
+    // gpio_set_function(PIN_SCK, GPIO_FUNC_SPI);
+    // gpio_set_function(PIN_MOSI, GPIO_FUNC_SPI);
+    // spi_set_format(SPI_PORT, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
 
-    // // allow usb time to connect
+    // // Chip select and Data/Command pins
+    // gpio_init(PIN_CS);
+    // gpio_set_dir(PIN_CS, GPIO_OUT);
+    // gpio_put(PIN_CS, 1);  // Deselect the display initially
+
+    // gpio_init(PIN_D_C);
+    // gpio_set_dir(PIN_D_C, GPIO_OUT);
+
+    // gpio_init(PIN_RST);
+    // gpio_set_dir(PIN_RST, GPIO_OUT);
+    
     // sleep_ms(9000);
-
-    // // The DMA has now copied our text from the transmit buffer (src) to the
-    // // receive buffer (dst), so we can print it out from there.
-    // puts(dst);
-    // 1. write a function to write to the slave (display)
-    // 2. write a function to read from the slave to the master (rp2040)
-    // 3. use one of the read functions to get a display id back send to usb serial monitor
-    while (true) {
-        printf("Hello, world!\n");
-        sleep_ms(1000);
+    lcd_init();
+    fill_screen(0xF800);  // Fill screen with red
+    fill_screen(0xFFE0);  // Fill screen with yellow
+    while (true) 
+    {
+        // write_command(0x2C);  // Memory Write
+        // for (int i = 0; i < 10000; i++) 
+        // {
+        //     write_data(0xF8);  // Red color
+        // }
+        
+        sleep_ms(1000);  // Wait before next read
+    
     }
 }
