@@ -13,6 +13,21 @@
 #define PIN_D_C  22 // data selection, command: 0, display data: 1
 #define PIN_RST  21
 
+// todo:
+// 1. include lvgl and eez studio ui
+// 2. initialize ui from eez studio an initialize lvgl, in main loop periodically call lv_timer_handler and ui_tick.
+// 3. register lvgl's custom display flush function
+
+// 4. write flush function that has been registered at lvgl 
+// 4.1 define a flush area; (x1, y1) top left corner, (x2, y2) bottom right corner
+// 4.2 get the pixel data only for that specific flush area
+// 4.3 send the split up pixel data
+
+
+void my_flush()
+{
+    
+}
 
 void write_command(uint8_t cmd) {
     gpio_put(PIN_D_C, 0);  // Command mode
@@ -30,7 +45,8 @@ void write_data(uint8_t data) {
     sleep_ms(1);
 }
 
-void write_data_buffer(uint8_t *data, size_t length) {
+void write_data_buffer(uint8_t *data, size_t length) 
+{
     gpio_put(PIN_D_C, 1);  // Data mode
     gpio_put(PIN_CS, 0);
     spi_write_blocking(SPI_PORT, data, length);
@@ -38,7 +54,8 @@ void write_data_buffer(uint8_t *data, size_t length) {
 }
 
 
-void lcd_reset() {
+void lcd_reset() 
+{
     gpio_put(PIN_RST, 0);
     sleep_ms(10);
     gpio_put(PIN_RST, 1);
@@ -66,7 +83,8 @@ void fill_screen(uint16_t color)
     write_command(0x2C);  // Memory Write
 
     // Send pixel data in chunks
-    for (int y = 0; y < 240; y++) {
+    for (int y = 0; y < 240; y++) 
+    {
         write_data_buffer(data, sizeof(data));  // Write 320 pixels at once
     }
 }
@@ -74,7 +92,7 @@ void fill_screen(uint16_t color)
 
 void lcd_init() {
     // Configure SPI and GPIOs
-    spi_init(SPI_PORT, 20 * 1000 * 1000);
+    spi_init(SPI_PORT, 63 * 1000 * 1000);
     gpio_set_function(PIN_MOSI, GPIO_FUNC_SPI);
     gpio_set_function(PIN_SCK, GPIO_FUNC_SPI);
     gpio_set_function(PIN_CS, GPIO_FUNC_SIO);  // CS pin is typically controlled manually
@@ -140,8 +158,6 @@ void lcd_init() {
     write_command(0x36);    // Memory Access Control
     write_data(0x40 | 0x08);  // Rotation 0 (portrait mode)
 
-    // write_data(0x48);
-
     write_command(0x3A);
     write_data(0x55);
 
@@ -206,37 +222,11 @@ int main()
 {
     stdio_init_all();
 
-    // // SPI initialisation
-    // spi_init(SPI_PORT, 1000 * 1000);  // Initialize SPI at 1 MHz
-    // gpio_set_function(PIN_MISO, GPIO_FUNC_SPI);
-    // gpio_set_function(PIN_SCK, GPIO_FUNC_SPI);
-    // gpio_set_function(PIN_MOSI, GPIO_FUNC_SPI);
-    // spi_set_format(SPI_PORT, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
-
-    // // Chip select and Data/Command pins
-    // gpio_init(PIN_CS);
-    // gpio_set_dir(PIN_CS, GPIO_OUT);
-    // gpio_put(PIN_CS, 1);  // Deselect the display initially
-
-    // gpio_init(PIN_D_C);
-    // gpio_set_dir(PIN_D_C, GPIO_OUT);
-
-    // gpio_init(PIN_RST);
-    // gpio_set_dir(PIN_RST, GPIO_OUT);
-    
-    // sleep_ms(9000);
     lcd_init();
-    fill_screen(0xF800);  // Fill screen with red
+    // fill_screen(0xF800);  // Fill screen with red
     fill_screen(0xFFE0);  // Fill screen with yellow
     while (true) 
-    {
-        // write_command(0x2C);  // Memory Write
-        // for (int i = 0; i < 10000; i++) 
-        // {
-        //     write_data(0xF8);  // Red color
-        // }
-        
+    {        
         sleep_ms(1000);  // Wait before next read
-    
     }
 }
