@@ -48,6 +48,13 @@ pico_enable_stdio_usb(PanelPilot 1)
 target_link_libraries(PanelPilot
         pico_stdlib)
 
+# Add LVGL from the submodule directory
+add_subdirectory(lib/lvgl)
+
+# Include LVGL headers
+target_include_directories(my_project PRIVATE
+        lib/lvgl)
+
 # Add the standard include files to the build
 target_include_directories(PanelPilot PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
@@ -57,6 +64,7 @@ target_include_directories(PanelPilot PRIVATE
 target_link_libraries(PanelPilot 
         hardware_spi
         hardware_dma
+        lvgl
         )
 
 pico_add_extra_outputs(PanelPilot)
