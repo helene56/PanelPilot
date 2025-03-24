@@ -42,7 +42,8 @@ void my_flush(lv_display_t * display, const lv_area_t * area, uint8_t * px_map)
 
     // write function to send pixels in chunks
     write_data_buffer(data, sizeof(data));
- 
+    // inform lvgl that I am ready with the flushing and pixel_buffer is not used anymore
+    lv_display_flush_ready(display);
 }
 
 void write_command(uint8_t cmd) {
