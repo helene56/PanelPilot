@@ -3,6 +3,7 @@
 #include "hardware/spi.h"
 #include "hardware/dma.h"
 #include "lib/lvgl/lvgl.h"
+#include "lib/ui/ui.h"
 // #define LV_CONF_INCLUDE_SIMPLE
 // #include "lib/lv_conf.h" // <-- path to your lv_conf.h
 // SPI Defines
@@ -19,7 +20,6 @@
 // todo:
 // 1. include lvgl and eez studio ui
 // 2. initialize ui from eez studio an initialize lvgl, in main loop periodically call lv_timer_handler and ui_tick.
-// 3. register lvgl's custom display flush function
 
 
 void write_command(uint8_t cmd) {
