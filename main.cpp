@@ -2,7 +2,7 @@
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
 #include "hardware/dma.h"
-#include "lvgl.h"
+#include "lib/lvgl/lvgl.h"
 // #define LV_CONF_INCLUDE_SIMPLE
 // #include "lib/lv_conf.h" // <-- path to your lv_conf.h
 // SPI Defines
@@ -21,30 +21,6 @@
 // 2. initialize ui from eez studio an initialize lvgl, in main loop periodically call lv_timer_handler and ui_tick.
 // 3. register lvgl's custom display flush function
 
-// 4. write flush function that has been registered at lvgl 
-// 4.1 define a flush area; (x1, y1) top left corner, (x2, y2) bottom right corner
-// 4.2 get the pixel data only for that specific flush area
-// 4.3 send the split up pixel data
-
-
-void my_flush(lv_display_t * display, const lv_area_t * area, uint8_t * px_map)
-{
-    uint16_t * pixel_buffer {(uint16_t *)px_map};
-    int32_t pixels_to_send {(area->x2 - area->x1 + 1) * (area->y2 - area->y1 + 1)};
-
-    uint8_t data[pixels_to_send * 2];                 // 8-bit buffer for SPI
-
-    for (int i = 0; i < pixels_to_send; ++i) 
-    {
-        data[2 * i]     = (pixel_buffer[i] >> 8) & 0xFF;  // High byte (MSB)
-        data[2 * i + 1] = pixel_buffer[i] & 0xFF;         // Low byte (LSB)
-    }
-
-    // write function to send pixels in chunks
-    write_data_buffer(data, sizeof(data));
-    // inform lvgl that I am ready with the flushing and pixel_buffer is not used anymore
-    lv_display_flush_ready(display);
-}
 
 void write_command(uint8_t cmd) {
     gpio_put(PIN_D_C, 0);  // Command mode
@@ -234,6 +210,42 @@ void lcd_init() {
     
     write_command(0x29);    // Display on
 }
+
+
+void my_flush(lv_display_t * display, const lv_area_t * area, uint8_t * px_map)
+{
+    uint16_t * pixel_buffer {(uint16_t *)px_map};
+    int32_t pixels_to_send {(area->x2 - area->x1 + 1) * (area->y2 - area->y1 + 1)};
+
+    uint8_t data[pixels_to_send * 2];                 // 8-bit buffer for SPI
+
+    for (int i = 0; i < pixels_to_send; ++i) 
+    {
+        data[2 * i]     = (pixel_buffer[i] >> 8) & 0xFF;  // High byte (MSB)
+        data[2 * i + 1] = pixel_buffer[i] & 0xFF;         // Low byte (LSB)
+    }
+
+    // write function to send pixels in chunks
+    write_data_buffer(data, sizeof(data));
+    // inform lvgl that I am ready with the flushing and pixel_buffer is not used anymore
+    lv_display_flush_ready(display);
+}
+
+void setup_screen()
+{
+    lv_init(); // initialize lvgl
+    lcd_init(); // initialize lcd screen
+    
+    constexpr int32_t hor_res {320};
+    constexpr int32_t ver_res {240};
+    lv_display_t * disp = lv_display_create(hor_res, ver_res); 
+    lv_display_set_flush_cb(disp, my_flush);
+    static uint16_t buf[hor_res * ver_res / 10]; // 1/10 size to render 10% of the screen
+    lv_display_set_buffers(disp, buf, NULL, sizeof(buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
+
+}
+
+
 
 int main()
 {
