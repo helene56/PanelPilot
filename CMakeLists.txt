@@ -44,6 +44,12 @@ pico_set_program_version(PanelPilot "0.1")
 pico_enable_stdio_uart(PanelPilot 0)
 pico_enable_stdio_usb(PanelPilot 1)
 
+# Define the path to the config file
+# target_compile_definitions(PanelPilot PRIVATE LV_CONF_PATH)
+# target_compile_definitions(PanelPilot PRIVATE LV_CONF_PATH="${CMAKE_SOURCE_DIR}/lib/lv_conf.h")
+# message(STATUS "LV_CONF_PATH is being set to: ${CMAKE_SOURCE_DIR}/lib/lv_conf.h")
+# target_compile_definitions(PanelPilot PRIVATE LV_CONF_PATH=\"${CMAKE_SOURCE_DIR}/lib/lv_conf.h\")
+
 # Add the standard library to the build
 target_link_libraries(PanelPilot
         pico_stdlib)
@@ -51,13 +57,13 @@ target_link_libraries(PanelPilot
 # Add LVGL from the submodule directory
 add_subdirectory(lib/lvgl)
 
-# Include LVGL headers
-target_include_directories(my_project PRIVATE
-        lib/lvgl)
+include_directories(${CMAKE_SOURCE_DIR}/lib)
 
 # Add the standard include files to the build
 target_include_directories(PanelPilot PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
+        lib
+        ${CMAKE_SOURCE_DIR}/lib/lvgl
 )
 
 # Add any user requested libraries
