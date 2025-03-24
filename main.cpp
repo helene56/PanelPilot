@@ -2,6 +2,9 @@
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
 #include "hardware/dma.h"
+#include "lvgl.h"
+// #define LV_CONF_INCLUDE_SIMPLE
+// #include "lib/lv_conf.h" // <-- path to your lv_conf.h
 // SPI Defines
 // We are going to use SPI 0, and allocate it to the following GPIO pins
 // Pins can be changed, see the GPIO function select table in the datasheet for information on GPIO assignments
@@ -24,9 +27,22 @@
 // 4.3 send the split up pixel data
 
 
-void my_flush()
+void my_flush(lv_display_t * display, const lv_area_t * area, uint8_t * px_map)
 {
-    
+    uint16_t * pixel_buffer {(uint16_t *)px_map};
+    int32_t pixels_to_send {(area->x2 - area->x1 + 1) * (area->y2 - area->y1 + 1)};
+
+    uint8_t data[pixels_to_send * 2];                 // 8-bit buffer for SPI
+
+    for (int i = 0; i < pixels_to_send; ++i) 
+    {
+        data[2 * i]     = (pixel_buffer[i] >> 8) & 0xFF;  // High byte (MSB)
+        data[2 * i + 1] = pixel_buffer[i] & 0xFF;         // Low byte (LSB)
+    }
+
+    // write function to send pixels in chunks
+    write_data_buffer(data, sizeof(data));
+ 
 }
 
 void write_command(uint8_t cmd) {
