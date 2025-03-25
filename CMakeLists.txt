@@ -33,10 +33,14 @@ project(PanelPilot C CXX ASM)
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
+# Add the lvgl submodule
+add_subdirectory(lib/lvgl)
+
+# Add the ui library
+add_subdirectory(lib/ui)
+
 # Add executable. Default name is the project name, version 0.1
-
 add_executable(PanelPilot main.cpp )
-
 pico_set_program_name(PanelPilot "PanelPilot")
 pico_set_program_version(PanelPilot "0.1")
 
@@ -44,34 +48,24 @@ pico_set_program_version(PanelPilot "0.1")
 pico_enable_stdio_uart(PanelPilot 0)
 pico_enable_stdio_usb(PanelPilot 1)
 
-# Define the path to the config file
-# target_compile_definitions(PanelPilot PRIVATE LV_CONF_PATH)
-# target_compile_definitions(PanelPilot PRIVATE LV_CONF_PATH="${CMAKE_SOURCE_DIR}/lib/lv_conf.h")
-# message(STATUS "LV_CONF_PATH is being set to: ${CMAKE_SOURCE_DIR}/lib/lv_conf.h")
-# target_compile_definitions(PanelPilot PRIVATE LV_CONF_PATH=\"${CMAKE_SOURCE_DIR}/lib/lv_conf.h\")
-
-# Add the standard library to the build
+# Link libraries to PanelPilot
 target_link_libraries(PanelPilot
-        pico_stdlib)
-
-# Add LVGL from the submodule directory
-add_subdirectory(lib/lvgl)
-
-include_directories(${CMAKE_SOURCE_DIR}/lib)
-
-# Add the standard include files to the build
-target_include_directories(PanelPilot PRIVATE
-        ${CMAKE_CURRENT_LIST_DIR}
-        lib
-        ${CMAKE_SOURCE_DIR}/lib/lvgl
+    pico_stdlib
+    hardware_spi
+    hardware_dma
+    lvgl
+    ui
 )
 
-# Add any user requested libraries
-target_link_libraries(PanelPilot 
-        hardware_spi
-        hardware_dma
-        lvgl
-        )
+# Add include directories for PanelPilot
+target_include_directories(PanelPilot PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}
+    ${CMAKE_SOURCE_DIR}/lib
+    ${CMAKE_CURRENT_LIST_DIR}/lib
+    ${CMAKE_SOURCE_DIR}/lib/lvgl
+    ${CMAKE_SOURCE_DIR}/lib/ui
+)
 
+# Add extra outputs for the Pico
 pico_add_extra_outputs(PanelPilot)
 
