@@ -243,6 +243,7 @@ void setup_screen()
     static uint16_t buf[hor_res * ver_res / 10]; // 1/10 size to render 10% of the screen
     lv_display_set_buffers(disp, buf, NULL, sizeof(buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
 
+    ui_init();
 }
 
 
@@ -253,9 +254,11 @@ int main()
 
     lcd_init();
     // fill_screen(0xF800);  // Fill screen with red
-    fill_screen(0xFFE0);  // Fill screen with yellow
+    // fill_screen(0xFFE0);  // Fill screen with yellow
     while (true) 
     {        
-        sleep_ms(1000);  // Wait before next read
+        uint32_t time_till_next = lv_timer_handler();
+        sleep_ms(time_till_next);
+        ui_tick();
     }
 }
