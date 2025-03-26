@@ -53,6 +53,7 @@ target_link_libraries(PanelPilot
     pico_stdlib
     hardware_spi
     hardware_dma
+    hardware_timer
     lvgl
     ui
 )
