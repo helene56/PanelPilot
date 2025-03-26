@@ -2,6 +2,7 @@
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
 #include "hardware/dma.h"
+#include "hardware/timer.h"
 #include "lib/lvgl/lvgl.h"
 #include "lib/ui/ui.h"
 // SPI Defines
@@ -14,7 +15,6 @@
 #define PIN_MOSI 19
 #define PIN_D_C  22 // data selection, command: 0, display data: 1
 #define PIN_RST  21
-
 // todo:
 // 1. include lvgl and eez studio ui
 // 2. initialize ui from eez studio an initialize lvgl, in main loop periodically call lv_timer_handler and ui_tick.
@@ -270,39 +270,48 @@ void setup_screen()
     constexpr int32_t ver_res {240};
     lv_display_t * disp = lv_display_create(hor_res, ver_res); 
     lv_display_set_flush_cb(disp, my_flush);
-    static uint16_t buf[hor_res * ver_res / 10]; // 1/10 size to render 10% of the screen
+    static lv_color_t buf[hor_res * ver_res / 10]; // 1/10 size to render 10% of the screen
     lv_display_set_buffers(disp, buf, NULL, sizeof(buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
 
     // Test screen
-    lv_obj_t *test_screen = lv_obj_create(NULL);
-    lv_obj_t *label = lv_label_create(test_screen);
-    lv_label_set_text(label, "really long test label");
-    lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
-    lv_obj_set_style_bg_color(test_screen, lv_color_hex(0xd4dba0), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_scr_load(test_screen);
+    // lv_obj_t *test_screen = lv_obj_create(NULL);
+    // lv_obj_t *label = lv_label_create(test_screen);
+    // lv_label_set_text(label, "really long test label");
+    // lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
+    // lv_obj_set_style_bg_color(test_screen, lv_color_hex(0xffc9d858), LV_PART_MAIN | LV_STATE_DEFAULT);
+    // lv_scr_load(test_screen);
 
 
-    // ui_init();
+    ui_init();
 
 }
 
 
 
+// need a timer to trigger the ui elements correctly
+void init_lvgl_tick() 
+{
+    hardware_alarm_claim(0);  // Claim alarm 0 for LVGL
+    hardware_alarm_set_callback(0, [](uint alarm_num) {
+        lv_tick_inc(1);  // Update LVGL tick every 1ms
+        hardware_alarm_set_target(alarm_num, make_timeout_time_ms(1));  // Reschedule
+    });
+    hardware_alarm_set_target(0, make_timeout_time_ms(1));  // First trigger
+}
+
 
 int main()
 {
     stdio_init_all();
-
     // lcd_init();
     setup_screen();
-    // fill_screen(0xF800);  // Fill screen with red
-    // fill_screen(0xFFE0);  // Fill screen with yellow
+
+    init_lvgl_tick();
+
     while (true) 
     {        
-        // uint32_t time_till_next = lv_timer_handler();
-        // sleep_ms(time_till_next);
-        // lv_timer_periodic_handler();
-        lv_timer_handler();
-        // ui_tick();
+        lv_timer_handler();  // Handle LVGL timers
+
+        ui_tick();
     }
 }
