@@ -4,8 +4,6 @@
 #include "hardware/dma.h"
 #include "lib/lvgl/lvgl.h"
 #include "lib/ui/ui.h"
-// #define LV_CONF_INCLUDE_SIMPLE
-// #include "lib/lv_conf.h" // <-- path to your lv_conf.h
 // SPI Defines
 // We are going to use SPI 0, and allocate it to the following GPIO pins
 // Pins can be changed, see the GPIO function select table in the datasheet for information on GPIO assignments
@@ -211,30 +209,62 @@ void lcd_init() {
     write_command(0x29);    // Display on
 }
 
+void landscape_mode()
+{
+    write_command(0x36); // memory access
+    // writedata(TFT_MAD_MX | TFT_MAD_MY | TFT_MAD_MV | TFT_MAD_COLOR_ORDER);
+    write_data(0x40 | 0x80 | 0x20 | 0x08); // set to landscape
+}
 
 void my_flush(lv_display_t * display, const lv_area_t * area, uint8_t * px_map)
 {
     uint16_t * pixel_buffer {(uint16_t *)px_map};
-    int32_t pixels_to_send {(area->x2 - area->x1 + 1) * (area->y2 - area->y1 + 1)};
+    int32_t row_width = area->x2 - area->x1 + 1;  // Width of the area
+    uint8_t data[row_width * 2];                 // 8-bit buffer for SPI
 
-    uint8_t data[pixels_to_send * 2];                 // 8-bit buffer for SPI
+    write_command(0x2A);  // Column Address Set
+    // start column
+    write_data((area->x1 >> 8) & 0xFF);  // MSB
+    write_data(area->x1 & 0xFF);         // LSB
+    // end column
+    write_data((area->x2 >> 8) & 0xFF);  // MSB
+    write_data(area->x2 & 0xFF);         // LSB
 
-    for (int i = 0; i < pixels_to_send; ++i) 
+    write_command(0x2B);  // Row Address Set
+    // start row
+    write_data((area->y1 >> 8) & 0xFF);  // MSB
+    write_data(area->y1 & 0xFF);         // LSB
+    // end row
+    write_data((area->y2 >> 8) & 0xFF);  // MSB
+    write_data(area->y2 & 0xFF);         // LSB
+
+    write_command(0x2C);  // Memory Write
+    
+    for (int32_t y = area->y1; y <= area->y2; ++y) 
     {
-        data[2 * i]     = (pixel_buffer[i] >> 8) & 0xFF;  // High byte (MSB)
-        data[2 * i + 1] = pixel_buffer[i] & 0xFF;         // Low byte (LSB)
+        // Prepare one row of pixel data
+        for (int32_t x = 0; x < row_width; ++x) 
+        {
+            data[2 * x]     = (pixel_buffer[x] >> 8) & 0xFF;  // High byte (MSB)
+            data[2 * x + 1] = pixel_buffer[x] & 0xFF;         // Low byte (LSB)
+        }
+
+        // Send the row data
+        write_data_buffer(data, sizeof(data));
+
+        // Move to the next row in the pixel buffer
+        pixel_buffer += row_width;
     }
 
-    // write function to send pixels in chunks
-    write_data_buffer(data, sizeof(data));
-    // inform lvgl that I am ready with the flushing and pixel_buffer is not used anymore
     lv_display_flush_ready(display);
 }
 
 void setup_screen()
 {
+    
     lv_init(); // initialize lvgl
     lcd_init(); // initialize lcd screen
+    landscape_mode();
     
     constexpr int32_t hor_res {320};
     constexpr int32_t ver_res {240};
@@ -243,8 +273,19 @@ void setup_screen()
     static uint16_t buf[hor_res * ver_res / 10]; // 1/10 size to render 10% of the screen
     lv_display_set_buffers(disp, buf, NULL, sizeof(buf), LV_DISPLAY_RENDER_MODE_PARTIAL);
 
-    ui_init();
+    // Test screen
+    lv_obj_t *test_screen = lv_obj_create(NULL);
+    lv_obj_t *label = lv_label_create(test_screen);
+    lv_label_set_text(label, "really long test label");
+    lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_set_style_bg_color(test_screen, lv_color_hex(0xd4dba0), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_scr_load(test_screen);
+
+
+    // ui_init();
+
 }
+
 
 
 
@@ -252,13 +293,16 @@ int main()
 {
     stdio_init_all();
 
-    lcd_init();
+    // lcd_init();
+    setup_screen();
     // fill_screen(0xF800);  // Fill screen with red
     // fill_screen(0xFFE0);  // Fill screen with yellow
     while (true) 
     {        
-        uint32_t time_till_next = lv_timer_handler();
-        sleep_ms(time_till_next);
-        ui_tick();
+        // uint32_t time_till_next = lv_timer_handler();
+        // sleep_ms(time_till_next);
+        // lv_timer_periodic_handler();
+        lv_timer_handler();
+        // ui_tick();
     }
 }
