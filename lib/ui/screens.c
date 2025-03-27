@@ -66,12 +66,6 @@ void create_screen_main() {
             }
         }
         {
-            lv_obj_t *obj = lv_imagebutton_create(parent_obj);
-            lv_obj_set_pos(obj, 232, 47);
-            lv_obj_set_size(obj, 0, 64);
-            lv_obj_set_style_bg_image_src(obj, &img_undefined, LV_PART_MAIN | LV_STATE_DEFAULT);
-        }
-        {
             lv_obj_t *obj = lv_img_create(parent_obj);
             lv_obj_set_pos(obj, 99, 79);
             lv_obj_set_size(obj, 50, 50);
