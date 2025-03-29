@@ -31,6 +31,8 @@ Physic:
 display system
  - show overview of watering cycles in calendar days
  - overview of humidity, light and user input
+ - touch capapilities
+
 
 measurement system
  - measure humidity
@@ -38,7 +40,8 @@ measurement system
  - measure light level
 
 user input system
-  - initiate watering cycle
+ - initiate watering cycle
+ - user selection of plants, and be able to give plants names/id's
 
 watering plants
 
@@ -54,12 +57,13 @@ life cycle concepts
 - service and maintain
 - retire
 
-
 Requirements
 
 - when humidity below 50% water pump shall turn on for 1 min.
 - when power buttonpressed on display, display shall turn on for 1 min.
 - when user interacts with display, display shall stay on.
+- display shall react when buttons pressed on the screen
+
 
 Time out function
  - Time out after last user interaction
@@ -69,4 +73,9 @@ Operational environment
 - 10 deg. to 35 deg.
 - look up light condition/ luminoucity
 - look up humidity inside
-charge and protect battery
+- charge and protect battery
+
+display should use 3.3v logic
+display should be bluetooth capable
+display needs to act as master recieving data from slaves (plant controllers) with the data once a days
+if user requests a status update, it should send a requests to the slaves to get most recent data.
