@@ -1,15 +1,19 @@
 #ifndef EEZ_LVGL_UI_IMAGES_H
 #define EEZ_LVGL_UI_IMAGES_H
 
-#include <lvgl.h>
+#include <lvgl/lvgl.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern const lv_img_dsc_t img_water_icon;
-extern const lv_img_dsc_t img_plant_icon;
-extern const lv_img_dsc_t img_plant_icon2;
+extern const lv_img_dsc_t img_sun2;
+extern const lv_img_dsc_t img_drop2;
+extern const lv_img_dsc_t img_humidity2;
+extern const lv_img_dsc_t img_pot1;
+extern const lv_img_dsc_t img_return3;
+extern const lv_img_dsc_t img_right_arrow;
+extern const lv_img_dsc_t img_left_arrow;
 
 #ifndef EXT_IMG_DESC_T
 #define EXT_IMG_DESC_T
@@ -19,7 +23,7 @@ typedef struct _ext_img_desc_t {
 } ext_img_desc_t;
 #endif
 
-extern const ext_img_desc_t images[3];
+extern const ext_img_desc_t images[7];
 
 
 #ifdef __cplusplus
