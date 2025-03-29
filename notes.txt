@@ -1,0 +1,72 @@
+Automatic watering display
+
+- show detected plants
+- display quantity of watering cycles
+- initiate manual watering cycle
+- display calendar days plants has been watered
+
+
+RFLP
+
+Functions:
+ - water plants
+ - display info
+ - take user inputs
+ - measure
+
+Logic:
+ - measurement system
+ - display system
+ - user inputs system
+
+Physic:
+ - soil capacitance sensor
+ - humidity sensor
+ - light resistor sensor
+ - resistors
+ - tranistors
+ - motor/pump
+ - tubes
+
+display system
+ - show overview of watering cycles in calendar days
+ - overview of humidity, light and user input
+
+measurement system
+ - measure humidity
+ - measure soil capacitance level
+ - measure light level
+
+user input system
+  - initiate watering cycle
+
+watering plants
+
+- contain water capacity
+- move water
+- increase air pressure
+- pump water
+
+life cycle concepts
+
+- prototype
+- utilize
+- service and maintain
+- retire
+
+
+Requirements
+
+- when humidity below 50% water pump shall turn on for 1 min.
+- when power buttonpressed on display, display shall turn on for 1 min.
+- when user interacts with display, display shall stay on.
+
+Time out function
+ - Time out after last user interaction
+ - timer shall count after ever user interaction and reset
+
+Operational environment
+- 10 deg. to 35 deg.
+- look up light condition/ luminoucity
+- look up humidity inside
+charge and protect battery
