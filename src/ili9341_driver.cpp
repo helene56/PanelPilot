@@ -181,3 +181,11 @@ void landscape_mode()
     // writedata(TFT_MAD_MX | TFT_MAD_MY | TFT_MAD_MV | TFT_MAD_COLOR_ORDER);
     write_data(0x40 | 0x80 | 0x20 | 0x08); // set to landscape
 }
+
+// touch control
+// control byte: S A2 A1 A0 MODE SER/DFR PD1 PD0
+// TODO:
+// 1. define a new chip select for the touch control chip
+// 2. define control byte
+// 3. define write mode
+// 4. define read mode
