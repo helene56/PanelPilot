@@ -40,7 +40,7 @@ add_subdirectory(lib/lvgl)
 add_subdirectory(lib/ui)
 
 # Add executable. Default name is the project name, version 0.1
-add_executable(PanelPilot main.cpp )
+add_executable(PanelPilot src/main.cpp )
 pico_set_program_name(PanelPilot "PanelPilot")
 pico_set_program_version(PanelPilot "0.1")
 
@@ -61,10 +61,9 @@ target_link_libraries(PanelPilot
 # Add include directories for PanelPilot
 target_include_directories(PanelPilot PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}
-    ${CMAKE_SOURCE_DIR}/lib
-    ${CMAKE_CURRENT_LIST_DIR}/lib
     ${CMAKE_SOURCE_DIR}/lib/lvgl
     ${CMAKE_SOURCE_DIR}/lib/ui
+    ${CMAKE_SOURCE_DIR}/src
 )
 
 # Add extra outputs for the Pico
