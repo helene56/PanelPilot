@@ -41,7 +41,8 @@ measurement system
 
 user input system
  - initiate watering cycle
- - user selection of plants, and be able to give plants names/id's
+ - user selection of plants
+ - assign plants names/id's
 
 watering plants
 
@@ -75,6 +76,7 @@ Operational environment
 - look up humidity inside
 - charge and protect battery
 
+we are employing..
 display should use 3.3v logic
 display should be bluetooth capable
 display needs to act as master recieving data from slaves (plant controllers) with the data once a days
