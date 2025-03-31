@@ -186,7 +186,34 @@ void landscape_mode()
 // touch control
 // control byte: S A2 A1 A0 MODE SER/DFR PD1 PD0
 // TODO:
-// 1. define a new chip select for the touch control chip
+// 1. define a new chip select for the touch control chip  [x]
 // 2. define control byte
+void touch_control_x_pos()
+{
+    uint8_t control_byte {0b11010011}; // start bit: first high bit
+    // notes, remove later
+    // uint8_t A0 {0};
+    // uint8_t A1 {0};
+    // uint8_t A2 {0};
+    // // for differential reference mode (ser/dfr low)
+    // // MODE
+    // uint8_t MODE {0}; // low for 12 bits conversion
+    // uint8_t SER_DFR {0}; //
+    // // power down mode select bits
+    // // start with always on for testing but should use power down between converstion
+    // // for always on: PENIRQ is disabled, power down mode: PENIRQ is enabled
+    // uint8_t PD0 {1};
+    // uint8_t PD1 {1};
+}
+
+void touch_control_y_pos()
+{
+    uint8_t control_byte {0b10010011}; // start bit: first high bit
+}
+
+void touch_control_z_pos()
+{
+    uint8_t control_byte {0b10110011}; // start bit: first high bit
+}
 // 3. define write mode
 // 4. define read mode
