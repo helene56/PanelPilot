@@ -227,14 +227,12 @@ uint8_t touch_control_z_pos()
 void touch_read_write(uint8_t control_byte)
 {
     spi_set_baudrate(SPI_PORT, 2 * 1000 * 1000);
-    // sleep_ms(1);
     gpio_put(PIN_CS, 1);
     gpio_put(TOUCH_CS, 0);
-    // spi_write_read_blocking(SPI_PORT, &control_byte, TOUCH_OUTPUT, 3);
     spi_write_blocking(SPI_PORT, &control_byte, 1);
     spi_read_blocking(SPI_PORT, 0x00, TOUCH_OUTPUT, 2);
     gpio_put(TOUCH_CS, 1);
-    sleep_ms(1);
+    sleep_ms(1); // do i need this?
     spi_set_baudrate(SPI_PORT, 63 * 1000 * 1000);
     if (gpio_get(TOUCH_PEN) == 0) 
     {
