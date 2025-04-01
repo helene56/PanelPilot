@@ -196,7 +196,7 @@ void initialize_touch()
 
     gpio_init(TOUCH_PEN);
     gpio_set_dir(TOUCH_PEN, GPIO_IN);
-    // gpio_pull_down(TOUCH_PEN);  // Enable internal pull-up
+    gpio_pull_up(TOUCH_PEN);  // Enable internal pull-up
 
 }
 // control byte: S A2 A1 A0 MODE SER/DFR PD1 PD0
@@ -205,22 +205,9 @@ void initialize_touch()
 // 2. define control byte
 uint8_t touch_control_x_pos()
 {
-    // uint8_t control_byte {0b11010011}; // start bit: first high bit
-    // notes, remove later
-    // uint8_t A0 {0};
-    // uint8_t A1 {0};
-    // uint8_t A2 {0};
-    // // for differential reference mode (ser/dfr low)
-    // // MODE
-    // uint8_t MODE {0}; // low for 12 bits conversion
-    // uint8_t SER_DFR {0}; //
-    // // power down mode select bits
-    // // start with always on for testing but should use power down between converstion
-    // // for always on: PENIRQ is disabled, power down mode: PENIRQ is enabled
-    // uint8_t PD0 {1};
-    // uint8_t PD1 {1};
-    // 1001 0000
-    return 0b11010011;
+    // note this is actually y position in landscape mode
+    // PD0 = 0, PD1 = 0
+    return 0b11010000;
 }
 
 uint8_t touch_control_y_pos()
@@ -232,7 +219,7 @@ uint8_t touch_control_y_pos()
 uint8_t touch_control_z_pos()
 {
     // uint8_t control_byte {0b10110011}; // start bit: first high bit
-    return 0b10110011;
+    return 0b10110000;
 }
 
 
@@ -255,9 +242,12 @@ void touch_read_write(uint8_t control_byte)
         // Combine the two 8-bit values into a 12-bit integer
         uint16_t value = ((TOUCH_OUTPUT[0] << 8) | (TOUCH_OUTPUT[1] & 0xFF)) >> 4; // Shift to get 12 bits
 
-        // Print the raw bytes and the converted 12-bit integer
-        printf("High Byte: 0x%02X, Low Byte: 0x%02X, 12-bit Value: %u\n", 
-            (uint8_t)TOUCH_OUTPUT[0], (uint8_t)TOUCH_OUTPUT[1], value);
+        // // Print the raw bytes and the converted 12-bit integer
+        // printf("High Byte: 0x%02X, Low Byte: 0x%02X, 12-bit Value: %u\n", 
+        //     (uint8_t)TOUCH_OUTPUT[0], (uint8_t)TOUCH_OUTPUT[1], value);
+
+        // Print the decimal value of the 12-bit integer
+        printf("Decimal Value: %d\n", value);
     }
     
     
