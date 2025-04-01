@@ -32,6 +32,8 @@ display system
  - show overview of watering cycles in calendar days
  - overview of humidity, light and user input
  - touch capapilities
+ - show water tank level in ml
+ - show adjustable schedule levels for each plant
 
 
 measurement system
@@ -75,6 +77,7 @@ Operational environment
 - look up light condition/ luminoucity
 - look up humidity inside
 - charge and protect battery
+
 
 we are employing..
 display should use 3.3v logic
