@@ -95,15 +95,19 @@ void init_lvgl_tick()
 int main()
 {
     stdio_init_all();
-    // lcd_init();
-    setup_screen();
+    lcd_init();
+    // setup_screen();
 
-    init_lvgl_tick();
+    // init_lvgl_tick();
 
+    initialize_touch();
     while (true) 
     {        
-        lv_timer_handler();  // Handle LVGL timers
+        // lv_timer_handler();  // Handle LVGL timers
 
-        ui_tick();
+        // ui_tick();
+    
+        touch_read_write(touch_control_x_pos());
+        // sleep_ms(200);
     }
 }

@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
 #include "ili9341_driver.h"
@@ -10,6 +11,9 @@
 #define PIN_MOSI 19
 #define PIN_D_C  22 // data selection, command: 0, display data: 1
 #define PIN_RST  21
+#define TOUCH_PEN 26
+
+uint8_t TOUCH_OUTPUT[2]; 
 
 void write_command(uint8_t cmd) 
 {
@@ -184,13 +188,24 @@ void landscape_mode()
 }
 
 // touch control
+void initialize_touch()
+{   
+    gpio_set_function(PIN_MISO, GPIO_FUNC_SPI);
+    gpio_set_function(TOUCH_CS, GPIO_FUNC_SIO);
+    gpio_put(TOUCH_CS, 1);
+
+    gpio_init(TOUCH_PEN);
+    gpio_set_dir(TOUCH_PEN, GPIO_IN);
+    // gpio_pull_down(TOUCH_PEN);  // Enable internal pull-up
+
+}
 // control byte: S A2 A1 A0 MODE SER/DFR PD1 PD0
 // TODO:
 // 1. define a new chip select for the touch control chip  [x]
 // 2. define control byte
-void touch_control_x_pos()
+uint8_t touch_control_x_pos()
 {
-    uint8_t control_byte {0b11010011}; // start bit: first high bit
+    // uint8_t control_byte {0b11010011}; // start bit: first high bit
     // notes, remove later
     // uint8_t A0 {0};
     // uint8_t A1 {0};
@@ -204,16 +219,49 @@ void touch_control_x_pos()
     // // for always on: PENIRQ is disabled, power down mode: PENIRQ is enabled
     // uint8_t PD0 {1};
     // uint8_t PD1 {1};
+    // 1001 0000
+    return 0b11010011;
 }
 
-void touch_control_y_pos()
+uint8_t touch_control_y_pos()
 {
-    uint8_t control_byte {0b10010011}; // start bit: first high bit
+    // uint8_t control_byte {0b10010011}; // start bit: first high bit
+    return 0b10010000;
 }
 
-void touch_control_z_pos()
+uint8_t touch_control_z_pos()
 {
-    uint8_t control_byte {0b10110011}; // start bit: first high bit
+    // uint8_t control_byte {0b10110011}; // start bit: first high bit
+    return 0b10110011;
 }
+
+
 // 3. define write mode
+void touch_read_write(uint8_t control_byte)
+{
+    spi_set_baudrate(SPI_PORT, 2 * 1000 * 1000);
+    // sleep_ms(1);
+    gpio_put(PIN_CS, 1);
+    gpio_put(TOUCH_CS, 0);
+    // spi_write_read_blocking(SPI_PORT, &control_byte, TOUCH_OUTPUT, 3);
+    spi_write_blocking(SPI_PORT, &control_byte, 1);
+    spi_read_blocking(SPI_PORT, 0x00, TOUCH_OUTPUT, 2);
+    gpio_put(TOUCH_CS, 1);
+    sleep_ms(1);
+    spi_set_baudrate(SPI_PORT, 63 * 1000 * 1000);
+    if (gpio_get(TOUCH_PEN) == 0) 
+    {
+        // Touch detected
+        // Combine the two 8-bit values into a 12-bit integer
+        uint16_t value = ((TOUCH_OUTPUT[0] << 8) | (TOUCH_OUTPUT[1] & 0xFF)) >> 4; // Shift to get 12 bits
+
+        // Print the raw bytes and the converted 12-bit integer
+        printf("High Byte: 0x%02X, Low Byte: 0x%02X, 12-bit Value: %u\n", 
+            (uint8_t)TOUCH_OUTPUT[0], (uint8_t)TOUCH_OUTPUT[1], value);
+    }
+    
+    
+    
+
+}
 // 4. define read mode
