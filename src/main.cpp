@@ -6,7 +6,7 @@
 #include "lib/lvgl/lvgl.h"
 #include "lib/ui/ui.h"
 #include "include/ili9341_driver.h"
-
+#include "include/xpt2046_driver.h"
 
 void my_flush(lv_display_t * display, const lv_area_t * area, uint8_t * px_map)
 {
@@ -106,8 +106,8 @@ int main()
         lv_timer_handler();  // Handle LVGL timers
 
         ui_tick();
-    
-        touch_read_write(touch_control_x_pos());
+        
+        get_coordinates();
         // sleep_ms(200);
     }
 }

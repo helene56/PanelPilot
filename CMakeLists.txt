@@ -70,6 +70,7 @@ target_include_directories(PanelPilot PRIVATE
 # Add your .cpp files to the list of source files
 target_sources(PanelPilot PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}/src/ili9341_driver.cpp
+  ${CMAKE_CURRENT_LIST_DIR}/src/xpt2046_driver.cpp
 )
 
 # Add extra outputs for the Pico
