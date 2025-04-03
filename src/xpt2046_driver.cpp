@@ -88,13 +88,13 @@ void my_input_read(lv_indev_t * indev, lv_indev_data_t * data)
         data->state = LV_INDEV_STATE_PRESSED;
 
         // Check if the touch is within the button area
-        uint16_t x1 = 574, x2 = 1701, y1 = 552, y2 = 789;
-        if ((x_coor < x2) && (x_coor > x1) && (y_coor > y1) && (y_coor < y2)) 
+        if ((x_coor < 1800) && (x_coor > 574) && (y_coor > 552) && (y_coor < 830)) 
         {
             // Simulate a button press by calling action_back_page
             action_back_page(NULL);
         }
         else
+        // TODO: maybe for both clicks allow a bigger area to be clicked for more responseviness
         if ((x_coor > 0) && (x_coor < 300) && (y_coor > 513) && (y_coor < 814))
         {
             action_next_page(NULL);
