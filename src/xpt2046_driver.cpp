@@ -94,6 +94,11 @@ void my_input_read(lv_indev_t * indev, lv_indev_data_t * data)
             // Simulate a button press by calling action_back_page
             action_back_page(NULL);
         }
+        else
+        if ((x_coor > 0) && (x_coor < 300) && (y_coor > 513) && (y_coor < 814))
+        {
+            action_next_page(NULL);
+        }
 
     }
     else
@@ -108,6 +113,14 @@ void action_back_page(lv_event_t *e)
     loadScreen(SCREEN_ID_PLANT_STATUS_1);
 
 }
+
+void action_next_page(lv_event_t *e) 
+{
+    // go to plant_status_1
+    loadScreen(SCREEN_ID_PLANT_STATUS);
+
+}
+
 
 // touch control
 void initialize_touch()

@@ -9,7 +9,7 @@ extern "C" {
 
 extern void action_status(lv_event_t * e);
 extern void action_back_page(lv_event_t * e);
-
+extern void action_next_page(lv_event_t * e);
 
 #ifdef __cplusplus
 }

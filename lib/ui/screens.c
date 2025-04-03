@@ -124,17 +124,18 @@ void create_screen_plant_status() {
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
             lv_label_set_text(obj, "%");
         }
-        {
-            lv_obj_t *obj = lv_obj_create(parent_obj);
-            lv_obj_set_pos(obj, 280, 144);
-            lv_obj_set_size(obj, 40, 40);
-        }
-        {
-            lv_obj_t *obj = lv_img_create(parent_obj);
-            lv_obj_set_pos(obj, 285, 149);
-            lv_obj_set_size(obj, 30, 30);
-            lv_img_set_src(obj, &img_right_arrow);
-        }
+        // TODO: if there are no next screens it should not show the right arrow object
+        // {
+        //     lv_obj_t *obj = lv_obj_create(parent_obj);
+        //     lv_obj_set_pos(obj, 280, 144);
+        //     lv_obj_set_size(obj, 40, 40);
+        // }
+        // {
+        //     lv_obj_t *obj = lv_img_create(parent_obj);
+        //     lv_obj_set_pos(obj, 285, 149);
+        //     lv_obj_set_size(obj, 30, 30);
+        //     lv_img_set_src(obj, &img_right_arrow);
+        // }
         {
             lv_obj_t *obj = lv_img_create(parent_obj);
             lv_obj_set_pos(obj, 9, 6);
@@ -299,6 +300,7 @@ void create_screen_plant_status_1() {
             lv_obj_set_pos(obj, 285, 149);
             lv_obj_set_size(obj, 30, 30);
             lv_img_set_src(obj, &img_right_arrow);
+            lv_obj_add_event_cb(obj, action_next_page, LV_EVENT_PRESSED, (void *)0);
         }
         {
             lv_obj_t *obj = lv_img_create(parent_obj);
