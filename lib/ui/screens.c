@@ -43,7 +43,7 @@ void create_screen_plant_status() {
             objects.obj0 = obj;
             lv_obj_set_pos(obj, 81, 168);
             lv_obj_set_size(obj, 162, 15);
-            lv_bar_set_value(obj, 25, LV_ANIM_OFF);
+            lv_bar_set_value(obj, 10, LV_ANIM_ON);
             lv_obj_set_style_bg_color(obj, lv_color_hex(0xffe5c84e), LV_PART_INDICATOR | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_color(obj, lv_color_hex(0xffd4db7c), LV_PART_MAIN | LV_STATE_DEFAULT);
         }
@@ -52,7 +52,7 @@ void create_screen_plant_status() {
             objects.obj1 = obj;
             lv_obj_set_pos(obj, 81, 209);
             lv_obj_set_size(obj, 162, 15);
-            lv_bar_set_value(obj, 25, LV_ANIM_OFF);
+            lv_bar_set_value(obj, 10, LV_ANIM_OFF);
             lv_obj_set_style_bg_color(obj, lv_color_hex(0xff69d2e9), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_color(obj, lv_color_hex(0xff4ecfeb), LV_PART_INDICATOR | LV_STATE_DEFAULT);
         }
@@ -74,7 +74,7 @@ void create_screen_plant_status() {
             objects.water_percentage = obj;
             lv_obj_set_pos(obj, 228, 108);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-            lv_label_set_text(obj, "x");
+            lv_label_set_text(obj, "0");
         }
         {
             lv_obj_t *obj = lv_label_create(parent_obj);
@@ -88,7 +88,7 @@ void create_screen_plant_status() {
             objects.water_percentage_1 = obj;
             lv_obj_set_pos(obj, 228, 108);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-            lv_label_set_text(obj, "x");
+            lv_label_set_text(obj, "0");
         }
         {
             lv_obj_t *obj = lv_label_create(parent_obj);
@@ -102,7 +102,7 @@ void create_screen_plant_status() {
             objects.sunlight_percentage = obj;
             lv_obj_set_pos(obj, 229, 152);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-            lv_label_set_text(obj, "x");
+            lv_label_set_text(obj, "0");
         }
         {
             lv_obj_t *obj = lv_label_create(parent_obj);
@@ -116,7 +116,7 @@ void create_screen_plant_status() {
             objects.humidity_percentage = obj;
             lv_obj_set_pos(obj, 230, 193);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-            lv_label_set_text(obj, "x");
+            lv_label_set_text(obj, "0");
         }
         {
             lv_obj_t *obj = lv_label_create(parent_obj);
@@ -198,18 +198,20 @@ void create_screen_plant_status_1() {
             lv_obj_set_size(obj, 80, 80);
             lv_img_set_src(obj, &img_plant1);
         }
+        // bar: drop2
         {
             lv_obj_t *obj = lv_bar_create(parent_obj);
             lv_obj_set_pos(obj, 81, 124);
             lv_obj_set_size(obj, 162, 15);
-            lv_bar_set_value(obj, 25, LV_ANIM_OFF);
+            lv_bar_set_value(obj, 0, LV_ANIM_OFF);
         }
+        // bar: sun2
         {
             lv_obj_t *obj = lv_bar_create(parent_obj);
             objects.obj2 = obj;
             lv_obj_set_pos(obj, 81, 168);
             lv_obj_set_size(obj, 162, 15);
-            lv_bar_set_value(obj, 25, LV_ANIM_OFF);
+            lv_bar_set_value(obj, 30, LV_ANIM_ON);
             lv_obj_set_style_bg_color(obj, lv_color_hex(0xffe5c84e), LV_PART_INDICATOR | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_color(obj, lv_color_hex(0xffd4db7c), LV_PART_MAIN | LV_STATE_DEFAULT);
         }
@@ -240,7 +242,7 @@ void create_screen_plant_status_1() {
             objects.water_percentage_2 = obj;
             lv_obj_set_pos(obj, 228, 108);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-            lv_label_set_text(obj, "x");
+            lv_label_set_text(obj, "0");
         }
         {
             lv_obj_t *obj = lv_label_create(parent_obj);
@@ -254,7 +256,7 @@ void create_screen_plant_status_1() {
             objects.water_percentage_3 = obj;
             lv_obj_set_pos(obj, 228, 108);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-            lv_label_set_text(obj, "x");
+            lv_label_set_text(obj, "0");
         }
         {
             lv_obj_t *obj = lv_label_create(parent_obj);
@@ -268,7 +270,7 @@ void create_screen_plant_status_1() {
             objects.sunlight_percentage_1 = obj;
             lv_obj_set_pos(obj, 229, 152);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-            lv_label_set_text(obj, "x");
+            lv_label_set_text(obj, "0");
         }
         {
             lv_obj_t *obj = lv_label_create(parent_obj);
@@ -282,7 +284,7 @@ void create_screen_plant_status_1() {
             objects.humidity_percentage_1 = obj;
             lv_obj_set_pos(obj, 230, 193);
             lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-            lv_label_set_text(obj, "x");
+            lv_label_set_text(obj, "0");
         }
         {
             lv_obj_t *obj = lv_label_create(parent_obj);

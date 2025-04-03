@@ -2,7 +2,7 @@
 file(GLOB UI_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.c")
 
 # Add the library with all .c files
-add_library(ui ${UI_SOURCES})
+add_library(ui ${UI_SOURCES} "${CMAKE_CURRENT_SOURCE_DIR}/animations.cpp")
 
 # Ensure LVGL is properly linked
 target_link_libraries(ui PUBLIC lvgl)

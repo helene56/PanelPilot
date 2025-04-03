@@ -5,6 +5,9 @@
 #include "actions.h"
 #include "ui.h"
 #include "xpt2046_driver.h"
+#include "lib/ui/animations.h"
+
+
 constexpr uint TOUCH_CS   {20};
 constexpr uint TOUCH_PEN  {26};
 
@@ -116,8 +119,12 @@ void action_back_page(lv_event_t *e)
 
 void action_next_page(lv_event_t *e) 
 {
-    // go to plant_status_1
+    // go to plant_status
     loadScreen(SCREEN_ID_PLANT_STATUS);
+    // TODO: this was just to test the animations.
+    // in the future maybe this would be nice when user updates display 
+    // to check for updated values?
+    sunlight_bar_anim();
 
 }
 
