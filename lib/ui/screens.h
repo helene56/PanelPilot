@@ -9,6 +9,7 @@ extern "C" {
 
 typedef struct _objects_t {
     lv_obj_t *plant_status;
+    lv_obj_t *plant_status_1;
     lv_obj_t *main;
     lv_obj_t *plants_screen;
     lv_obj_t *main_test;
@@ -18,24 +19,34 @@ typedef struct _objects_t {
     lv_obj_t *water_percentage_1;
     lv_obj_t *sunlight_percentage;
     lv_obj_t *humidity_percentage;
-    lv_obj_t *water;
-    lv_obj_t *plant;
     lv_obj_t *obj2;
     lv_obj_t *obj3;
+    lv_obj_t *water_percentage_2;
+    lv_obj_t *water_percentage_3;
+    lv_obj_t *sunlight_percentage_1;
+    lv_obj_t *humidity_percentage_1;
+    lv_obj_t *water;
+    lv_obj_t *plant;
     lv_obj_t *obj4;
+    lv_obj_t *obj5;
+    lv_obj_t *obj6;
 } objects_t;
 
 extern objects_t objects;
 
 enum ScreensEnum {
     SCREEN_ID_PLANT_STATUS = 1,
-    SCREEN_ID_MAIN = 2,
-    SCREEN_ID_PLANTS_SCREEN = 3,
-    SCREEN_ID_MAIN_TEST = 4,
+    SCREEN_ID_PLANT_STATUS_1 = 2,
+    SCREEN_ID_MAIN = 3,
+    SCREEN_ID_PLANTS_SCREEN = 4,
+    SCREEN_ID_MAIN_TEST = 5,
 };
 
 void create_screen_plant_status();
 void tick_screen_plant_status();
+
+void create_screen_plant_status_1();
+void tick_screen_plant_status_1();
 
 void create_screen_main();
 void tick_screen_main();

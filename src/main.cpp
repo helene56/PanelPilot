@@ -78,7 +78,12 @@ void setup_screen()
 
 }
 
-
+void init_input_touch()
+{
+    lv_indev_t * indev = lv_indev_create();        /* Create input device connected to Default Display. */
+    lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);   /* Touch pad is a pointer-like device. */
+    lv_indev_set_read_cb(indev, my_input_read);    /* Set driver function. */
+}
 
 // need a timer to trigger the ui elements correctly
 void init_lvgl_tick() 
@@ -101,13 +106,15 @@ int main()
     init_lvgl_tick();
 
     initialize_touch();
+    init_input_touch();
     while (true) 
     {        
         lv_timer_handler();  // Handle LVGL timers
-
+        get_coordinates();
         ui_tick();
         
-        get_coordinates();
+        // get_coordinates();
+        
         // sleep_ms(200);
     }
 }

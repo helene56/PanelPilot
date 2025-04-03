@@ -1,6 +1,6 @@
 #include "images.h"
 
-const ext_img_desc_t images[7] = {
+const ext_img_desc_t images[8] = {
     { "sun2", &img_sun2 },
     { "drop2", &img_drop2 },
     { "humidity2", &img_humidity2 },
@@ -8,4 +8,5 @@ const ext_img_desc_t images[7] = {
     { "return3", &img_return3 },
     { "right_arrow", &img_right_arrow },
     { "left_arrow", &img_left_arrow },
+    { "plant1", &img_plant1 },
 };
