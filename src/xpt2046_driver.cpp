@@ -5,7 +5,18 @@
 #include "actions.h"
 #include "ui.h"
 #include "xpt2046_driver.h"
-#include "lib/ui/animations.h"
+#include "animations.h"
+
+// Define your touch controller's raw value ranges
+#define TOUCH_X_MIN     0
+#define TOUCH_X_MAX     4095    // 12-bit resolution
+#define TOUCH_Y_MIN     0
+#define TOUCH_Y_MAX     4095    // 12-bit resolution
+
+// Display dimensions
+#define DISPLAY_WIDTH   320
+#define DISPLAY_HEIGHT  240
+
 
 
 constexpr uint TOUCH_CS   {20};
@@ -62,16 +73,22 @@ void get_coordinates()
         touch_read_write(0b11010000, &TOUCH_OUTPUT[2]);
         // Touch detected
         // Combine the two 8-bit values into a 12-bit integer
-        uint16_t x_coor = ((TOUCH_OUTPUT[0] << 8) | (TOUCH_OUTPUT[1] & 0xFF)) >> 4; // Shift to get 12 bits
-        uint16_t y_coor = ((TOUCH_OUTPUT[2] << 8) | (TOUCH_OUTPUT[3] & 0xFF)) >> 4; // Shift to get 12 bits
+        uint16_t raw_x = ((TOUCH_OUTPUT[0] << 8) | (TOUCH_OUTPUT[1] & 0xFF)) >> 4; // Shift to get 12 bits
+        uint16_t raw_y = ((TOUCH_OUTPUT[2] << 8) | (TOUCH_OUTPUT[3] & 0xFF)) >> 4; // Shift to get 12 bits
+        // // Map raw values to screen coordinates
+        // uint16_t mapped_x = (raw_x - 0) * 320 / (1811 - 0); // Map X to 320px width
+        // uint16_t mapped_y = (raw_y - 0) * 240 / (1867 - 0); // Map Y to 240px height
         // Print the decimal value of the 12-bit integer
-        printf("x coordinate: %d, ", x_coor);
-        printf("y coordinate: %d\n", y_coor);
+        printf("x coordinate: %d, ", raw_x);
+        printf("y coordinate: %d\n", raw_y);
     }  
 }
 
-
-
+// Simple map function
+static inline int map_value(int val, int in_min, int in_max, int out_min, int out_max) 
+{
+    return (val - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
 
 
 void my_input_read(lv_indev_t * indev, lv_indev_data_t * data)
@@ -83,25 +100,53 @@ void my_input_read(lv_indev_t * indev, lv_indev_data_t * data)
     if (gpio_get(TOUCH_PEN) == 0)
     {
 
-        uint16_t x_coor = ((TOUCH_OUTPUT[0] << 8) | (TOUCH_OUTPUT[1] & 0xFF)) >> 4; // Shift to get 12 bits
-        uint16_t y_coor = ((TOUCH_OUTPUT[2] << 8) | (TOUCH_OUTPUT[3] & 0xFF)) >> 4; // Shift to get 12 bits
+        uint16_t raw_x = ((TOUCH_OUTPUT[0] << 8) | (TOUCH_OUTPUT[1] & 0xFF)) >> 4; // Shift to get 12 bits
+        uint16_t raw_y = ((TOUCH_OUTPUT[2] << 8) | (TOUCH_OUTPUT[3] & 0xFF)) >> 4; // Shift to get 12 bits
 
-        data->point.x = x_coor;
-        data->point.y = y_coor;
+        // Map raw values to screen coordinates
+        // Calibrated bounds from your measurements
+        const int x_raw_min = 118;
+        const int x_raw_max = 1868;
+
+        const int y_raw_min = 179;
+        const int y_raw_max = 1885;
+
+        // Display resolution
+        const int screen_width = 320;
+        const int screen_height = 240;
+
+        // Map raw to screen coordinates, flipping X and Y
+        int mapped_x = map_value(raw_x, x_raw_max, x_raw_min, 0, screen_width - 1);
+        int mapped_y = map_value(raw_y, y_raw_min, y_raw_max, screen_height - 1, 0);
+
+        // Clamp values to screen bounds just in case
+        if (mapped_x < 0) mapped_x = 0;
+        if (mapped_x >= screen_width) mapped_x = screen_width - 1;
+
+        if (mapped_y < 0) mapped_y = 0;
+        if (mapped_y >= screen_height) mapped_y = screen_height - 1;
+
+        data->point.x = mapped_x;
+        data->point.y = mapped_y;
         data->state = LV_INDEV_STATE_PRESSED;
-
-        // Check if the touch is within the button area
-        if ((x_coor < 1800) && (x_coor > 574) && (y_coor > 552) && (y_coor < 830)) 
-        {
-            // Simulate a button press by calling action_back_page
-            action_back_page(NULL);
-        }
-        else
-        // TODO: maybe for both clicks allow a bigger area to be clicked for more responseviness
-        if ((x_coor > 0) && (x_coor < 300) && (y_coor > 513) && (y_coor < 814))
-        {
-            action_next_page(NULL);
-        }
+        
+        
+        printf("Mapped X: %d, Mapped Y: %d, State: %s\n", 
+            mapped_x, 
+            mapped_y, 
+            data->state == LV_INDEV_STATE_PRESSED ? "PRESSED" : "RELEASED");
+        // // Check if the touch is within the button area
+        // if ((x_coor < 1800) && (x_coor > 574) && (y_coor > 552) && (y_coor < 830)) 
+        // {
+        //     // Simulate a button press by calling action_back_page
+        //     action_back_page(NULL);
+        // }
+        // else
+        // // TODO: maybe for both clicks allow a bigger area to be clicked for more responseviness
+        // if ((x_coor > 0) && (x_coor < 300) && (y_coor > 513) && (y_coor < 814))
+        // {
+        //     action_next_page(NULL);
+        // }
 
     }
     else
@@ -117,6 +162,14 @@ void action_back_page(lv_event_t *e)
 
 }
 
+void button_event_handler(lv_event_t *e) 
+{
+    printf("Button pressed!\n");
+    // Call gradual_bar_anim to animate obj4 and obj5
+    gradual_bar_anim(0); // Start the animation with a value of 10
+}
+
+
 void action_next_page(lv_event_t *e) 
 {
     // go to plant_status
@@ -124,7 +177,7 @@ void action_next_page(lv_event_t *e)
     // TODO: this was just to test the animations.
     // in the future maybe this would be nice when user updates display 
     // to check for updated values?
-    sunlight_bar_anim();
+    bar_anim();
 
 }
 

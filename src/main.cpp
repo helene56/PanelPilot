@@ -110,7 +110,7 @@ int main()
     while (true) 
     {        
         lv_timer_handler();  // Handle LVGL timers
-        get_coordinates();
+        // get_coordinates();
         ui_tick();
         
         // get_coordinates();
